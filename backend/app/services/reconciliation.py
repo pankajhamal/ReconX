@@ -84,6 +84,12 @@ def compare(internal, provider_matches):
     if internal and provider:
         amount_difference = provider["amount"] - internal["amount"]
 
+    # Use our own date when we have the record, otherwise the provider's.
+    if internal:
+        transaction_date = internal.get("created_at")
+    else:
+        transaction_date = provider.get("processed_at")
+
     return {
         "reference": (internal or provider)["reference"],
         "internal_id": internal["transaction_id"] if internal else None,
@@ -96,4 +102,5 @@ def compare(internal, provider_matches):
         "category": category,
         "payment_outcome": payment_outcome,
         "amount_difference": amount_difference,
+        "transaction_date": transaction_date,
     }
