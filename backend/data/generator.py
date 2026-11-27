@@ -16,8 +16,6 @@ import random
 from datetime import datetime, timedelta
 from pathlib import Path
 
-random.seed(42)  # same output on every run
-
 OUTPUT_DIR = Path(__file__).parent / "generated"
 START_DATE = datetime(2026, 11, 20)
 DAYS = 6
@@ -62,6 +60,8 @@ def smaller_amount(amount):
 
 def build_records():
     """Build internal records, provider records and ground truth."""
+    random.seed(42)  # same output on every run
+
     internal = []
     provider = []
     truth = []

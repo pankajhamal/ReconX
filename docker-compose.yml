@@ -5,10 +5,23 @@ services:
       POSTGRES_USER: reconx
       POSTGRES_PASSWORD: reconx
       POSTGRES_DB: reconx
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "reconx"]
+      interval: 2s
+      retries: 15
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql://reconx:reconx@db:5432/reconx
+      FRONTEND_URL: http://localhost:5173
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy  # wait until Postgres accepts connections
 
 volumes:
   pgdata:
