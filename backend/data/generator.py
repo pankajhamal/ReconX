@@ -23,8 +23,8 @@ PAYMENT_METHODS = ["WALLET", "CARD", "BANK_TRANSFER"]
 
 # How many internal transactions get each scenario (total = 1,000).
 SCENARIOS = {
-    "MATCHED": 730,
-    "AMOUNT_MISMATCH": 70,
+    "MATCHED": 700,
+    "AMOUNT_MISMATCH": 100,
     "MISSING_PROVIDER": 50,
     "DUPLICATE": 40,
     "STATUS_MISMATCH": 40,

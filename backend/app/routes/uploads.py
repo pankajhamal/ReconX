@@ -1,7 +1,6 @@
 """Endpoints for uploading the two transaction CSV files."""
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -19,16 +18,11 @@ async def read_text(file):
 
 
 def save(db, rows, errors, save_function):
-    """Reject the file if it has errors, otherwise save it."""
+    """Reject the file if it has errors, otherwise replace the stored data with it."""
     if errors:
         raise HTTPException(400, {"errors": errors})
-    try:
-        inserted = save_function(db, rows)
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(400, {"errors": ["Some references already exist in the database"]})
-    return {"rows_in_file": len(rows), "inserted": inserted,
-            "already_imported": len(rows) - inserted}
+    save_function(db, rows)
+    return {"rows_saved": len(rows)}
 
 
 @router.post("/internal")

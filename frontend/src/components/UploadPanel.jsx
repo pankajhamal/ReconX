@@ -16,11 +16,11 @@ export default function UploadPanel({ onReconciled }) {
     try {
       if (internalFile) {
         const result = await uploadFile("internal", internalFile);
-        setMessage(`Internal: ${result.inserted} new rows. `);
+        setMessage(`Internal: ${result.rows_saved} rows loaded. `);
       }
       if (providerFile) {
         const result = await uploadFile("provider", providerFile);
-        setMessage((text) => text + `Provider: ${result.inserted} new rows. `);
+        setMessage((text) => text + `Provider: ${result.rows_saved} rows loaded. `);
       }
       const summary = await runReconciliation();
       setMessage((text) => text + `Reconciliation batch #${summary.batch_id} finished.`);
