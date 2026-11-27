@@ -4,5 +4,5 @@ sqlalchemy
 psycopg[binary]
 pandas
 python-multipart
-python-dotenv
+pydantic-settings
 pytest

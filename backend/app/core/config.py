@@ -1,10 +1,13 @@
-"""Application settings, read from the .env file."""
+"""Application settings, read from environment variables or the .env file."""
 
-import os
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from dotenv import load_dotenv
 
-load_dotenv()
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env")
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://reconx:reconx@localhost:5432/reconx")
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+    database_url: str = "postgresql://reconx:reconx@localhost:5432/reconx"
+    frontend_url: str = "http://localhost:5173"
+
+
+settings = Settings() 
