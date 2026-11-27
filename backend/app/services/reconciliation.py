@@ -11,6 +11,11 @@ Amounts are integers in paisa. Internal references are expected to be
 unique (ingestion checks this before reconciliation runs).
 """
 
+from sqlalchemy import select
+
+from app.models import (InternalTransaction, ProviderTransaction,
+                        ReconciliationBatch, ReconciliationResult)
+
 # Reconciliation categories
 MATCHED = "MATCHED"
 PENDING = "PENDING"
@@ -104,3 +109,40 @@ def compare(internal, provider_matches):
         "amount_difference": amount_difference,
         "transaction_date": transaction_date,
     }
+
+
+def run_batch(db):
+    """Reconcile every stored transaction and save the results as a new batch."""
+    internal_rows = [
+        {"transaction_id": t.transaction_id, "reference": t.reference, "amount": t.amount,
+         "currency": t.currency, "status": t.status, "created_at": t.created_at}
+        for t in db.scalars(select(InternalTransaction).order_by(InternalTransaction.id))
+    ]
+    provider_rows = [
+        {"provider_id": t.provider_id, "reference": t.reference, "amount": t.amount,
+         "currency": t.currency, "status": t.status, "processed_at": t.processed_at}
+        for t in db.scalars(select(ProviderTransaction).order_by(ProviderTransaction.id))
+    ]
+    if not internal_rows and not provider_rows:
+        return None  # nothing uploaded yet
+
+    batch = ReconciliationBatch(internal_count=len(internal_rows),
+                                provider_count=len(provider_rows))
+    for result in reconcile(internal_rows, provider_rows):
+        batch.results.append(ReconciliationResult(
+            reference=result["reference"],
+            internal_transaction_id=result["internal_id"],
+            provider_transaction_id=result["provider_id"],
+            internal_amount=result["internal_amount"],
+            provider_amount=result["provider_amount"],
+            amount_difference=result["amount_difference"],
+            internal_status=result["internal_status"],
+            provider_status=result["provider_status"],
+            transaction_date=result["transaction_date"],
+            category=result["category"],
+            payment_outcome=result["payment_outcome"],
+        ))
+
+    db.add(batch)
+    db.commit()
+    return batch

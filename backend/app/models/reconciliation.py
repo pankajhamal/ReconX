@@ -15,6 +15,8 @@ class ReconciliationBatch(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    internal_count: Mapped[int]  # internal rows compared in this run
+    provider_count: Mapped[int]  # provider rows compared (duplicates included)
 
     results: Mapped[list["ReconciliationResult"]] = relationship(back_populates="batch")
 

@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import FRONTEND_URL
 from app.core.database import create_tables
-from app.routes import uploads
+from app.routes import reconciliation, uploads
 
 
 @asynccontextmanager
@@ -27,3 +27,4 @@ app.add_middleware(
 )
 
 app.include_router(uploads.router)
+app.include_router(reconciliation.router)
