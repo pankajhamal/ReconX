@@ -25,7 +25,7 @@ class ReconciliationResult(Base):
     """The outcome for one reference in one batch.
 
     Amounts and statuses are copied from the original records, so a batch
-    still shows what was compared even if new data is imported later.
+    still shows what was compared after new files replace the transactions.
     """
 
     __tablename__ = "reconciliation_results"
@@ -34,11 +34,11 @@ class ReconciliationResult(Base):
     batch_id: Mapped[int] = mapped_column(ForeignKey("reconciliation_batches.id"), index=True)
     reference: Mapped[str] = mapped_column(String(50), index=True)
 
-    # Links to the original records (empty when a record is missing).
-    internal_transaction_id: Mapped[str | None] = mapped_column(
-        ForeignKey("internal_transactions.transaction_id"))
-    provider_transaction_id: Mapped[str | None] = mapped_column(
-        ForeignKey("provider_transactions.provider_id"))
+    # IDs of the original records (empty when a record is missing). These are
+    # not foreign keys: a new upload replaces the transactions, but old batches
+    # must stay readable.
+    internal_transaction_id: Mapped[str | None] = mapped_column(String(50))
+    provider_transaction_id: Mapped[str | None] = mapped_column(String(50))
 
     internal_amount: Mapped[int | None] = mapped_column(BigInteger)
     provider_amount: Mapped[int | None] = mapped_column(BigInteger)

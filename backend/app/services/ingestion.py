@@ -3,13 +3,16 @@ CSV ingestion: read an uploaded CSV, validate every row, and save it.
 
 A file is accepted only if every row is valid. Otherwise nothing is saved
 and the list of errors is returned, so the user can fix the file.
+
+Each upload replaces the previous data of that type, so the next
+reconciliation always compares the latest internal and provider files.
 """
 
 import csv
 import io
 from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import delete
 
 from app.models import InternalTransaction, ProviderTransaction
 
@@ -94,18 +97,14 @@ def validate_row(row, columns, date_column):
 
 
 def save_internal(db, rows):
-    """Save internal rows. Rows already in the database are skipped."""
-    existing = set(db.scalars(select(InternalTransaction.transaction_id)))
-    new_rows = [row for row in rows if row["transaction_id"] not in existing]
-    db.add_all(InternalTransaction(**row) for row in new_rows)
+    """Replace all internal transactions with the rows from the new file."""
+    db.execute(delete(InternalTransaction))
+    db.add_all(InternalTransaction(**row) for row in rows)
     db.commit()
-    return len(new_rows)
 
 
 def save_provider(db, rows):
-    """Save provider rows. Rows already in the database are skipped."""
-    existing = set(db.scalars(select(ProviderTransaction.provider_id)))
-    new_rows = [row for row in rows if row["provider_id"] not in existing]
-    db.add_all(ProviderTransaction(**row) for row in new_rows)
+    """Replace all provider transactions with the rows from the new file."""
+    db.execute(delete(ProviderTransaction))
+    db.add_all(ProviderTransaction(**row) for row in rows)
     db.commit()
-    return len(new_rows)

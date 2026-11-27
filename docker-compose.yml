@@ -19,9 +19,18 @@ services:
       FRONTEND_URL: http://localhost:5173
     ports:
       - "8000:8000"
+    volumes:
+      - ./backend/data/generated:/app/data/generated  # generated CSVs appear on your computer
     depends_on:
       db:
         condition: service_healthy  # wait until Postgres accepts connections
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
 
 volumes:
   pgdata:
